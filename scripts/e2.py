@@ -59,6 +59,7 @@ def create_checkpoints():
 
 
 def publish_checkpoint(c):
+	print(c)
 	c.header.stamp = rospy.Time.now()
 
 	if not tf_buf.can_transform(c.header.frame_id, 'cf1/odom', c.header.stamp):
