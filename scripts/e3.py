@@ -23,7 +23,7 @@ def camera_image_cb(ros_img):
 	lower_limit = np.array([4, 50, 50])
 	upper_limit = np.array([15, 255 ,255])
 
-	# Threshold the HSV image to get only blue colors
+	# Threshold the HSV image to get colors in range
 	bin_img = cv2.inRange(hsv_img, lower_limit, upper_limit)
 
 
@@ -68,48 +68,6 @@ def camera_image_cb(ros_img):
 
 	except TypeError as e:
 		print("No walls detected")
-
-
-
-
-# def dot_moment(c, color, bgr_img):
-# 	M = cv2.moments(c)
-# 	cx = int(M['m10']/M['m00'])
-# 	cy = int(M['m01']/M['m00'])
-# 	cv2.circle(bgr_img, (cx, cy), 2, color, -1)
-
-
-		# print("(" + str(cx) + ", " + str(cy) + ")")
-		# cv2.putText(bgr_img, zip_c)
-
-			# cv2.putText(bgr_img, zip_c, (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255))
-
-
-
-
-
-
-	# gray_img = bridge.imgmsg_to_cv2(ros_img, "mono8")
-
-	# blur_img = cv2.GaussianBlur(gray_img, (11,11), .001)
-
-	# thresh_img = cv2.adaptiveThreshold(blur_img,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,11,2)
-
-	# morph_img = cv2.morphologyEx(thresh_img, cv2.MORPH_OPEN, np.ones((7,7)))
-
-	# contours, hierarchy = cv2.findContours(morph_img, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
-	
-	# for contour in contours:
-	# 	if cv2.arcLength(contour,True)<1000 and cv2.arcLength(contour,True)>20:
-	# 		x,y,w,h = cv2.boundingRect(contour)
-	# 		clr_img = cv2.rectangle(clr_img,(x,y),(x+w,y+h),(0,255,0),2)
-
-
-		#get moments and print center points of detected objects
-
-
-
-
 
 	try:
 		pub_bw_image.publish(bridge.cv2_to_imgmsg(bgr_img, "bgr8")) # mono8 bgr8
