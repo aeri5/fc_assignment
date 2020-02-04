@@ -34,7 +34,6 @@ tf_broadcaster = tf2_ros.TransformBroadcaster()
 def main():
     rate = rospy.Rate(20)  # Hz
     while not rospy.is_shutdown():
-        print(".")
         if markers:
             transforms = [greta(m) for m in markers]
             tf_broadcaster.sendTransform(transforms)

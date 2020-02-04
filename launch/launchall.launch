@@ -1,0 +1,21 @@
+<launch>
+
+	<include file="$(find dd2419_simulation)/launch/simulation.launch">
+		<arg name="gui" value="true"/> 
+	</include>
+
+	<include file="$(find dd2419_simulation)/launch/aruco.launch">
+		<arg name="gui" value="false"/> 
+	</include>
+
+	<node pkg="part2" type="displaymapmarkers" name="mapmarkers">
+    	<param name="world_name" value="~/dd2419_ws/src/course_packages/dd2419_resources/worlds_json/tutorial_1.world.json" />
+	</node>
+
+
+
+
+	<node name="tf_base2camera" pkg="tf2_ros" type="static_transform_publisher" args="0.01 0 0.02 -1.57 0 -1.57 cf1/base_link cf1/camera_link" />
+	<node name="tf_map2odom" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 map cf1/odom" />
+
+</launch>

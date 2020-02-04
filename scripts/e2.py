@@ -106,7 +106,7 @@ tf_lstn  = tf2_ros.TransformListener(tf_buf)
 
 def main():
 	rate = rospy.Rate(20)  # Hz
-
+	
 	while not rospy.is_shutdown():
 		if len(checkpoints) > 0:
 			publish_checkpoint(checkpoints[0])
