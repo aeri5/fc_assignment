@@ -9,21 +9,100 @@ from cv_bridge import CvBridge, CvBridgeError
 
 
 def camera_image_cb(ros_img):
-	img_clr = bridge.imgmsg_to_cv2(ros_img, "bgr8")
-	img_gray = bridge.imgmsg_to_cv2(ros_img, "mono8")
+	try:
+		bgr_img = bridge.imgmsg_to_cv2(ros_img, "bgr8")     #image width 640, height 480
+		#blur_img = cv2.GaussianBlur(bgr_img, (5,5), 0)
+	except CvBridgeError as e:
+		print(e)
 
-	img_blur = cv2.GaussianBlur(img_gray, (11,11), .001)
 
-	img_thresh = cv2.adaptiveThreshold(img_blur,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,11,2)
+	# Convert BGR to HSV
+	hsv_img = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2HSV)
 
-	img_morph = cv2.morphologyEx(img_thresh, cv2.MORPH_OPEN, np.ones((7,7)))
+	# define range of color in HSV
+	lower_limit = np.array([4, 50, 50])
+	upper_limit = np.array([15, 255 ,255])
 
-	contours, hierarchy = cv2.findContours(img_morph, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+	# Threshold the HSV image to get only blue colors
+	bin_img = cv2.inRange(hsv_img, lower_limit, upper_limit)
+
+
+	morph_img = cv2.morphologyEx(bin_img, cv2.MORPH_OPEN, np.ones((3,3)))
+
+	contours, hierarchy = cv2.findContours(morph_img, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)   #RETR_EXTERNAL RETR_CCOMP
+
+	try:
+		hierarchy = hierarchy[0]
+
+		nwalls = len([w for w in hierarchy if w[3] < 0])
+		print("Found " + str(nwalls) + " walls with moments at:")
+
+		for i,z in enumerate(zip(contours, hierarchy)):
+			zip_c = z[0]
+			zip_h = z[1]
+
+
+			if zip_h[3] < 0:	#if no parents, contour is of hierarchy 1
+				cv2.drawContours(bgr_img, zip_c, -1, (0, 0, 255), 2, cv2.LINE_AA)	#paint red
+
+				M = cv2.moments(zip_c)
+				cx = int(M['m10']/M['m00'])
+				cy = int(M['m01']/M['m00'])
+				cv2.circle(bgr_img, (cx, cy), 2, (0, 0, 255), -1)
+
+
+				print("(" + str(cx) + ", " + str(cy) + ")")
+
+
+			elif zip_h[2] < 0:	#if no children, contour is of hierarchy 2
+				cv2.drawContours(bgr_img, zip_c, -1, (0, 255, 0), 2, cv2.LINE_AA)	#paint green
+
+				M = cv2.moments(zip_c)
+				cx = int(M['m10']/M['m00'])
+				cy = int(M['m01']/M['m00'])
+				cv2.circle(bgr_img, (cx, cy), 2, (0, 255, 0), -1)
+
+				print("     with hole at (" + str(cx) + ", " + str(cy) + ")")
+
+		print("\n\n")
+
+	except TypeError as e:
+		print("No walls detected")
+
+
+
+
+# def dot_moment(c, color, bgr_img):
+# 	M = cv2.moments(c)
+# 	cx = int(M['m10']/M['m00'])
+# 	cy = int(M['m01']/M['m00'])
+# 	cv2.circle(bgr_img, (cx, cy), 2, color, -1)
+
+
+		# print("(" + str(cx) + ", " + str(cy) + ")")
+		# cv2.putText(bgr_img, zip_c)
+
+			# cv2.putText(bgr_img, zip_c, (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255))
+
+
+
+
+
+
+	# gray_img = bridge.imgmsg_to_cv2(ros_img, "mono8")
+
+	# blur_img = cv2.GaussianBlur(gray_img, (11,11), .001)
+
+	# thresh_img = cv2.adaptiveThreshold(blur_img,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,11,2)
+
+	# morph_img = cv2.morphologyEx(thresh_img, cv2.MORPH_OPEN, np.ones((7,7)))
+
+	# contours, hierarchy = cv2.findContours(morph_img, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
 	
-	for contour in contours:
-		if cv2.arcLength(contour,True)<1000 and cv2.arcLength(contour,True)>20:
-			x,y,w,h = cv2.boundingRect(contour)
-			img_clr = cv2.rectangle(img_clr,(x,y),(x+w,y+h),(0,255,0),2)
+	# for contour in contours:
+	# 	if cv2.arcLength(contour,True)<1000 and cv2.arcLength(contour,True)>20:
+	# 		x,y,w,h = cv2.boundingRect(contour)
+	# 		clr_img = cv2.rectangle(clr_img,(x,y),(x+w,y+h),(0,255,0),2)
 
 
 		#get moments and print center points of detected objects
@@ -33,17 +112,9 @@ def camera_image_cb(ros_img):
 
 
 	try:
-		pub_bw_image.publish(bridge.cv2_to_imgmsg(img_clr, "bgr8")) # mono8 bgr8
+		pub_bw_image.publish(bridge.cv2_to_imgmsg(bgr_img, "bgr8")) # mono8 bgr8
 	except CvBridgeError as e:
 		print(e)
-
-
-
-
-
-
-
-
 
 
 rospy.init_node('e3')

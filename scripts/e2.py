@@ -21,7 +21,7 @@ def currentpos_cb(c):
 		if not first_t:
 			first_t = rospy.Time.now()
 		else:
-			if c.header.stamp.secs-first_t.secs >= 5:
+			if c.header.stamp.secs-first_t.secs >= 2:
 				checkpoints.popleft()
 				first_t = None
 
@@ -30,27 +30,44 @@ def currentpos_cb(c):
 def create_checkpoints():
 	global checkpoints
 
-	#Create first goal pose
-	g = PoseStamped()
-	g.header.frame_id = 'map'	
-	g.pose.position.x = 2.0
-	g.pose.position.y = -2.0
-	g.pose.position.z = 0.4
-	checkpoints.append(g)
-
-	#Create second goal pose
+	#Create goal poses
 	g = PoseStamped()
 	g.header.frame_id = 'map'
 	g.pose.position.x = 0.0
-	g.pose.position.y = 2.0
-	g.pose.position.z = 2.5
+	g.pose.position.y = 0.0
+	g.pose.position.z = 0.4
+	(g.pose.orientation.x, g.pose.orientation.y, g.pose.orientation.z, g.pose.orientation.w) = quaternion_from_euler(math.radians(0), math.radians(0), math.radians(-90)) #(roll, pitch, yaw)
+	checkpoints.append(g)
+
+	g = PoseStamped()
+	g.header.frame_id = 'map'
+	g.pose.position.x = 0.0
+	g.pose.position.y = -4.5
+	g.pose.position.z = 0.4
+	(g.pose.orientation.x, g.pose.orientation.y, g.pose.orientation.z, g.pose.orientation.w) = quaternion_from_euler(math.radians(0), math.radians(0), math.radians(-90)) #(roll, pitch, yaw)
+	checkpoints.append(g)
+
+	g = PoseStamped()
+	g.header.frame_id = 'map'	
+	g.pose.position.x = 2
+	g.pose.position.y = -2.0
+	g.pose.position.z = 0.4
+	(g.pose.orientation.x, g.pose.orientation.y, g.pose.orientation.z, g.pose.orientation.w) = quaternion_from_euler(math.radians(0), math.radians(0), math.radians(0)) #(roll, pitch, yaw)
+	checkpoints.append(g)
+
+
+	g = PoseStamped()
+	g.header.frame_id = 'map'
+	g.pose.position.x = 0.0
+	g.pose.position.y = 1.5
+	g.pose.position.z = 1.5
 	(g.pose.orientation.x, g.pose.orientation.y, g.pose.orientation.z, g.pose.orientation.w) = quaternion_from_euler(math.radians(0), math.radians(0), math.radians(270)) #(roll, pitch, yaw)
 	checkpoints.append(g)
 
-	#Create third goal pose
+
 	g = PoseStamped()
 	g.header.frame_id = 'map'
-	g.pose.position.x = -2.0
+	g.pose.position.x = -3.0
 	g.pose.position.y = 0.0
 	g.pose.position.z = 1
 	checkpoints.append(g)
@@ -59,7 +76,6 @@ def create_checkpoints():
 
 
 def publish_checkpoint(c):
-	print(c)
 	c.header.stamp = rospy.Time.now()
 
 	if not tf_buf.can_transform(c.header.frame_id, 'cf1/odom', c.header.stamp):
